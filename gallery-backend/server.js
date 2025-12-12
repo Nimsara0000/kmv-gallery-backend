@@ -15,7 +15,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // 🛑 ඔබ ලබා දුන් MongoDB URI එක
-const MONGO_URI = "mongodb+srv://nima:nima@nimabot.gkpbhvh.mongodb.net/KMV_Gallery_DB"; 
+const MONGO_URI = "mongodb+srv://nima:nima@nimabot.gkpbhvh.mongodb.net/"; 
 const PORT = process.env.PORT || 5001;
 
 const app = express();
