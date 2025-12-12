@@ -6,6 +6,11 @@ const GalleryPhotoSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    // 🛑 NEW FIELD ADDED: Cloudinary Public ID for deletion
+    publicId: { 
+        type: String,
+        required: true, // මෙය Cloudinary upload එකේදී ලැබෙන නිසා, එය අනිවාර්ය විය යුතුය.
+    },
     caption: {
         type: String,
         default: 'KMV Drama Event Photo',
@@ -14,6 +19,9 @@ const GalleryPhotoSchema = new mongoose.Schema({
         type: String, 
         default: 'Admin',
     },
-}, { timestamps: true });
+}, { 
+    // Note: ඔබ මෙහි timestamps: true ලෙස යොදා ඇත. එය හොඳයි.
+    timestamps: true 
+});
 
 module.exports = mongoose.model('GalleryPhoto', GalleryPhotoSchema);
