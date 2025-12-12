@@ -1,20 +1,10 @@
 // gallery-backend/routes/galleryRoutes.js
 const express = require('express');
 const GalleryPhoto = require('../models/GalleryPhoto');
+// Note: Multer, Cloudinary මෙහිදී අවශ්‍ය නැත, ඒවා server.js හි භාවිතා වේ.
 
-// 🛑 Admin Authentication Middleware (මෙහිදී Token එකක් header එකේ තිබේදැයි සරලව බලයි)
-const protectAdmin = (req, res, next) => {
-    // Frontend එකේ localStorage.getItem('adminToken') එක 'true' ලෙස යවනු ඇත.
-    const token = req.header('Authorization'); 
-    if (token) {
-        next(); 
-    } else {
-        // මෙය Admin Login එකේ Token එක මත පදනම් වේ.
-        res.status(401).json({ msg: 'Authorization denied. Admin access required.' });
-    }
-};
-
-module.exports = (emitGalleryUpdate) => {
+// Middleware එක server.js වෙතින් ලැබේ
+module.exports = (emitGalleryUpdate, protectAdmin) => {
     const router = express.Router();
 
     // 1. GET all photos (Public Access)
@@ -28,36 +18,15 @@ module.exports = (emitGalleryUpdate) => {
         }
     });
 
-    // 2. POST a new photo (Admin Only)
-    router.post('/', protectAdmin, async (req, res) => {
-        const { photoUrl, caption, uploader } = req.body;
-
-        if (!photoUrl) {
-            return res.status(400).json({ msg: 'Photo URL is required.' });
-        }
-
-        try {
-            const newPhoto = new GalleryPhoto({
-                photoUrl,
-                caption,
-                uploader: uploader || 'Admin',
-            });
-
-            const photo = await newPhoto.save();
-            
-            // Real-time update
-            emitGalleryUpdate(); 
-
-            res.json(photo);
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server Error');
-        }
-    });
-
+    // 2. 🛑 POST a new photo (The file upload route is now in server.js at /api/gallery/upload)
+    // මෙම Route එක හිස්ව තබයි, නැතිනම් URL-based upload සඳහා නම් වෙනස් කරයි.
+    
     // 3. DELETE a photo (Admin Only)
     router.delete('/:id', protectAdmin, async (req, res) => {
         try {
+            // 🛑 Note: Cloudinary එකෙනුත් photo එක delete කිරීමට මෙහි logic ලිවිය යුතුය.
+            // උදා: await cloudinary.uploader.destroy(publicId);
+            
             const photo = await GalleryPhoto.findByIdAndDelete(req.params.id);
 
             if (!photo) {
