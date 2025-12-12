@@ -53,7 +53,7 @@ const upload = multer({ dest: 'uploads/' });
 
 // 🛑 Admin Authentication Middleware (Simplified)
 const protectAdmin = (req, res, next) => {
-    // 🛑 මෙය ඔබට අවශ්‍ය පරිදි වෙනස් කරන්න
+    // 🛑 Token එක Frontend එකෙන් එවන අගය (උදා: 'Admin_Access_Token_Placeholder')
     const token = req.header('Authorization'); 
     if (token && token === 'Admin_Access_Token_Placeholder') { 
         next(); 
@@ -85,7 +85,7 @@ const galleryRoutes = require('./routes/galleryRoutes')(emitGalleryUpdate, prote
 app.use('/api/gallery', galleryRoutes);
 
 
-// 6. 🛑 NEW ROUTE: DIRECT FILE UPLOAD (This is the route that accepts the file)
+// 6. 🛑 NEW ROUTE: DIRECT FILE UPLOAD (Public ID එක Save කිරීමට වෙනස් කර ඇත)
 app.post('/api/gallery/upload', protectAdmin, upload.single('image'), async (req, res) => {
     
     if (!req.file) {
@@ -103,9 +103,10 @@ app.post('/api/gallery/upload', protectAdmin, upload.single('image'), async (req
         // 2. තාවකාලිකව සර්වර් එකේ තිබූ ගොනුව ඉවත් කිරීම
         fs.unlinkSync(req.file.path); 
 
-        // 3. New Photo Link එක DB එකේ Save කිරීම
+        // 3. New Photo Link සහ Public ID එක DB එකේ Save කිරීම
         const newPhoto = new GalleryPhoto({
             photoUrl: result.secure_url, 
+            publicId: result.public_id, // 🛑 Cloudinary Public ID එක Save කරයි
             caption,
             uploader: uploader || 'Admin',
         });
