@@ -1,9 +1,9 @@
 // gallery-backend/routes/galleryRoutes.js
 const express = require('express');
 const GalleryPhoto = require('../models/GalleryPhoto');
-// Note: Multer, Cloudinary මෙහිදී අවශ්‍ය නැත, ඒවා server.js හි භාවිතා වේ.
+// 🛑 Cloudinary Library එක Route file එකට Import කිරීම
+const cloudinary = require('cloudinary').v2; 
 
-// Middleware එක server.js වෙතින් ලැබේ
 module.exports = (emitGalleryUpdate, protectAdmin) => {
     const router = express.Router();
 
@@ -18,28 +18,34 @@ module.exports = (emitGalleryUpdate, protectAdmin) => {
         }
     });
 
-    // 2. 🛑 POST a new photo (The file upload route is now in server.js at /api/gallery/upload)
-    // මෙම Route එක හිස්ව තබයි, නැතිනම් URL-based upload සඳහා නම් වෙනස් කරයි.
-    
-    // 3. DELETE a photo (Admin Only)
+    // 2. DELETE a photo (Admin Only) - 🛑 Cloudinary Logic එක එකතු කරන ලදී
     router.delete('/:id', protectAdmin, async (req, res) => {
         try {
-            // 🛑 Note: Cloudinary එකෙනුත් photo එක delete කිරීමට මෙහි logic ලිවිය යුතුය.
-            // උදා: await cloudinary.uploader.destroy(publicId);
-            
-            const photo = await GalleryPhoto.findByIdAndDelete(req.params.id);
+            // 1. DB එකෙන් photo එක සොයා ගැනීම
+            const photo = await GalleryPhoto.findById(req.params.id);
 
             if (!photo) {
                 return res.status(404).json({ msg: 'Photo not found' });
             }
+            
+            const publicId = photo.publicId; 
+            
+            // 2. 🛑 Cloudinary වෙතින් photo එක මකා දැමීම
+            if (publicId) {
+                await cloudinary.uploader.destroy(publicId);
+                console.log(`Cloudinary file deleted: ${publicId}`);
+            }
+
+            // 3. DB එකෙන් photo record එක මකා දැමීම
+            await photo.deleteOne(); 
 
             // Real-time update
             emitGalleryUpdate(); 
 
-            res.json({ msg: 'Photo removed' });
+            res.json({ msg: 'Photo removed successfully' });
         } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server Error');
+            console.error('Deletion Error:', err.message);
+            res.status(500).send('Server Error: Deletion failed.');
         }
     });
 
