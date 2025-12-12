@@ -19,7 +19,7 @@ console.log('- API Key:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET');
 console.log('- API Secret:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET');
 
 const ADMIN_TOKEN = 'Admin_Access_Token_Placeholder';
-const MONGO_URI = "mongodb+srv://nima:nima@nimabot.gkpbhvh.mongodb.net/KMV_Gallery_DB"; 
+const MONGO_URI = "mongodb+srv://nima:nima@nimabot.gkpbhvh.mongodb.net/"; 
 const PORT = process.env.PORT || 5001;
 
 const app = express();
